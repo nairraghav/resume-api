@@ -115,7 +115,8 @@ def update_user_by_id(user_id: int):
             if valid_user_params(request.json):
                 for request_parameter in user_params:
                     if request_parameter in request.json:
-                        setattr(user, request_parameter, request.json[request_parameter])
+                        setattr(user, request_parameter,
+                                request.json[request_parameter])
 
                         try:
                             experience_ids = request.json['experiences']
@@ -136,17 +137,30 @@ def update_user_by_id(user_id: int):
 
                         db.session.add(user)
                         db.session.commit()
-                        return jsonify(id=f"{request.host_url}api/user/{user.id}")
+                        return jsonify(id=f"{request.host_url}api/user/"
+                                          f"{user.id}")
             else:
                 jsonify(message="Invalid Data", reasons=["Email Must Be Valid,"
                                                          "Password Must Be"
                                                          "Alphanumeric and 4-"
-                                                         "15 Characters Long"])
+                                                         "15 Characters Long"]
+                        )
         else:
             jsonify(message="User does not exist"), 404
     else:
         return jsonify(message="Request Parameters Must Be Submitted In JSON"
                        ), 400
+
+
+@app.route('/api/user/<int:user_id>', methods=['DELETE'])
+def delete_user_by_id(user_id: int):
+    user = User.query.filter(User.id == user_id).first()
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        return '', 204
+    else:
+        return jsonify(message="No User Found"), 404
 
 
 @app.route('/api/experiences', methods=['GET'])
@@ -180,11 +194,13 @@ def create_experience():
                 description = request.json['description']
                 experience = Experience(company_name=company_name,
                                         position_title=position_title,
-                                        start_date=start_date, end_date=end_date,
+                                        start_date=start_date,
+                                        end_date=end_date,
                                         description=description)
                 db.session.add(experience)
                 db.session.commit()
-                return jsonify(id=f"{request.host_url}api/experience/{experience.id}")
+                return jsonify(id=f"{request.host_url}api/experience/"
+                                  f"{experience.id}")
             else:
                 return jsonify(message="One Or More Parameters Are Missing",
                                required_parameters=user_params), 400
@@ -194,6 +210,51 @@ def create_experience():
     else:
         return jsonify(message="Request Parameters Must Be Submitted In JSON"
                        ), 400
+
+
+@app.route('/api/experience/<int:experience_id>', methods=['PUT'])
+def update_experience_by_id(experience_id: int):
+    if request.json:
+        experience = Experience.query.filter(Experience.id == experience_id).first()
+        if experience:
+            if validate_experience_params(request.json):
+                if request.json.get('company_name'):
+                    experience.company_name = request.json['company_name']
+                if request.json.get('position_title'):
+                    experience.position_title = request.json['position_title']
+                if request.json.get('start_date'):
+                    experience.start_date = datetime.strptime(request.json[
+                                                                  'start_date'],
+                                                              "%m-%d-%Y")
+                if request.json.get('end_date'):
+                    experience.end_date = datetime.strptime(request.json[
+                                                                'end_date'],
+                                                            "%m-%d-%Y")
+                if request.json.get('description'):
+                    experience.description = request.json['description']
+                db.session.add(experience)
+                db.session.commit()
+                result = experience_schema.dump(experience)
+                return jsonify(experience=result)
+            else:
+                return jsonify(message="Invalid Data",
+                               reasons=["Date Must Be Formatted MM-DD-YYYY"]), 400
+        else:
+            return jsonify(message="No Experience Found"), 404
+    else:
+        return jsonify(message="Request Parameters Must Be Submitted In JSON"
+                       ), 400
+
+
+@app.route('/api/experience/<int:experience_id>', methods=['DELETE'])
+def delete_experience_by_id(experience_id: int):
+    experience = Experience.query.filter(Experience.id == experience_id).first()
+    if experience:
+        db.session.delete(experience)
+        db.session.commit()
+        return '', 204
+    else:
+        return jsonify(message="No Experience Found"), 404
 
 
 def parameters_in_request_json(request_json, parameter_list):
