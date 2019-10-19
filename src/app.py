@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, render_template
 from flask import request
 from flask_jwt_extended import jwt_required, create_access_token
 import re
@@ -28,6 +28,20 @@ def seed_db():
 @app.cli.command('drop_db')
 def drop_db():
     database.drop_db()
+
+
+############################
+#            SITE          #
+############################
+
+@app.route('/home', methods=['GET'])
+def get_home_page():
+    return render_template('home.html', current_user=None)
+
+
+############################
+#            API           #
+############################
 
 
 @app.route('/api/users', methods=['GET'])
