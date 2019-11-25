@@ -5,7 +5,7 @@ from src.config import db, marsh
 
 
 class User(db.Model):
-    __tablename__ = 'users'
+    __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     first_name = Column(String)
     last_name = Column(String)
@@ -13,7 +13,7 @@ class User(db.Model):
     phone_number = Column(String)
     email_address = Column(String, unique=True)
     password = Column(String)
-    experiences = relationship('Experience', backref='User', lazy='dynamic')
+    experiences = relationship("Experience", backref="User", lazy="dynamic")
 
 
 class UserSchema(marsh.ModelSchema):

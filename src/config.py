@@ -11,5 +11,7 @@ marsh = Marshmallow(app)
 jwt = JWTManager(app)
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(base_dir, 'resume.db')
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
+    base_dir, "resume.db"
+)
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
