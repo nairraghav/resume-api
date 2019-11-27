@@ -3,6 +3,7 @@ from src.models.user import User
 from src.models.experience import Experience
 from faker import Faker
 from random import randint
+from bcrypt import hashpw, gensalt
 
 fake = Faker()
 
@@ -36,14 +37,16 @@ def seed_db():
             db.session.add(experience)
             experiences.append(experience)
 
+        password = fake.word().encode()
         user = User(
             first_name=fake.first_name(),
             last_name=fake.last_name(),
             city_state=f"{fake.city()},{fake.state()}",
             phone_number=fake.phone_number(),
             email_address=fake.ascii_safe_email(),
-            password="P@ssw0rd",
-            experiences=list(experiences),
+            test_pass=password,
+            password=hashpw(password, gensalt()),
+            experiences=list(experiences)
         )
         db.session.add(user)
 

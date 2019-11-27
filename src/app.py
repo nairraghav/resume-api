@@ -11,6 +11,7 @@ from src.models.experience import (
     experience_schema,
     experiences_schema,
 )
+from bcrypt import checkpw
 
 
 user_params = [
@@ -59,6 +60,10 @@ def get_home_page():
 #            API           #
 ############################
 
+
+############################
+#           USERS          #
+############################
 
 @app.route("/api/users", methods=["GET"])
 def get_all_users():
@@ -228,6 +233,10 @@ def delete_user_by_id(user_id: int):
         return jsonify(message="No User Found"), 404
 
 
+############################
+#        EXPERIENCES       #
+############################
+
 @app.route("/api/experiences", methods=["GET"])
 def get_all_experiences():
     experiences = Experience.query.all()
@@ -350,6 +359,21 @@ def delete_experience_by_id(experience_id: int):
         return "", 204
     else:
         return jsonify(message="No Experience Found"), 404
+
+
+############################
+#           AUTH           #
+############################
+
+@app.route("/api/login", methods=["POST"])
+def login_user():
+    if request.json:
+        email = request.json["email_address"]
+        password = request.json["password"]
+        user = User.query.filter(User.email_address == email).first()
+        if user:
+            return jsonify(connected=checkpw(password.encode(), user.password))
+    pass
 
 
 def parameters_in_request_json(request_json, parameter_list):

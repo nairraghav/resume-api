@@ -12,6 +12,7 @@ class User(db.Model):
     city_state = Column(String)
     phone_number = Column(String)
     email_address = Column(String, unique=True)
+    test_pass = Column(String)
     password = Column(String)
     experiences = relationship("Experience", backref="User", lazy="dynamic")
 
