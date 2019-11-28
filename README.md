@@ -1,4 +1,6 @@
 # Resume App
+[![Build Status](https://travis-ci.org/nairraghav/resume-app.svg?branch=master)](https://travis-ci.org/nairraghav/resume-app)
+
 This repository contains code for a resume app that will be used to create resumes. The goal of this repository is to 
 learn how to use Flask, SQLAlchemy, and some other tools to kickstand a quick service to create users and experiences
 to eventually create a resume. 
