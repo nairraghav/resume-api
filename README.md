@@ -27,6 +27,7 @@ to eventually create a resume.
 
 ## Upcoming Features
 ### Front End
+* User Authentication (Flask-Login)
 * Front-End to interact with API
 * Templatize Resume
 * Export To PDF
