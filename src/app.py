@@ -1,7 +1,7 @@
 from flask import jsonify, render_template
 from flask import request
+
 # from flask_jwt_extended import jwt_required, create_access_token
-import re
 from datetime import datetime
 from src.config import app, db
 from src import database
@@ -11,6 +11,7 @@ from src.models.experience import (
     experience_schema,
     experiences_schema,
 )
+from src import common
 from bcrypt import checkpw
 
 
@@ -65,6 +66,7 @@ def get_home_page():
 #           USERS          #
 ############################
 
+
 @app.route("/api/users", methods=["GET"])
 def get_all_users():
     users = User.query.all()
@@ -116,8 +118,8 @@ def get_user_experiences(user_id: int):
 @app.route("/api/user/create", methods=["POST"])
 def create_user():
     if request.json:
-        if valid_user_params(request.json):
-            if parameters_in_request_json(request.json, user_params):
+        if common.valid_user_params(request.json):
+            if common.parameters_in_request_json(request.json, user_params):
                 first_name = request.json["first_name"]
                 last_name = request.json["last_name"]
                 city_state = request.json["city_state"]
@@ -166,7 +168,7 @@ def update_user_by_id(user_id: int):
     if request.json:
         user = User.query.filter(User.id == user_id).first()
         if user:
-            if valid_user_params(request.json):
+            if common.valid_user_params(request.json):
                 for request_parameter in user_params:
                     if request_parameter in request.json:
                         setattr(
@@ -237,6 +239,7 @@ def delete_user_by_id(user_id: int):
 #        EXPERIENCES       #
 ############################
 
+
 @app.route("/api/experiences", methods=["GET"])
 def get_all_experiences():
     experiences = Experience.query.all()
@@ -259,8 +262,10 @@ def get_experience_by_id(experience_id: int):
 @app.route("/api/experience/create", methods=["POST"])
 def create_experience():
     if request.json:
-        if validate_experience_params(request.json):
-            if parameters_in_request_json(request.json, experience_params):
+        if common.validate_experience_params(request.json):
+            if common.parameters_in_request_json(
+                request.json, experience_params
+            ):
                 company_name = request.json["company_name"]
                 position_title = request.json["position_title"]
                 start_date = datetime.strptime(
@@ -312,7 +317,7 @@ def update_experience_by_id(experience_id: int):
             Experience.id == experience_id
         ).first()
         if experience:
-            if validate_experience_params(request.json):
+            if common.validate_experience_params(request.json):
                 if request.json.get("company_name"):
                     experience.company_name = request.json["company_name"]
                 if request.json.get("position_title"):
@@ -365,6 +370,7 @@ def delete_experience_by_id(experience_id: int):
 #           AUTH           #
 ############################
 
+
 @app.route("/api/login", methods=["POST"])
 def login_user():
     if request.json:
@@ -374,39 +380,6 @@ def login_user():
         if user:
             return jsonify(connected=checkpw(password.encode(), user.password))
     pass
-
-
-def parameters_in_request_json(request_json, parameter_list):
-    for parameter in parameter_list:
-        if parameter not in request_json:
-            return False
-    return True
-
-
-def valid_user_params(request_json):
-    email_regex = re.compile("[^@]+@[^@]+\\.[^@]+")
-    password_regex = re.compile("^(?=.*\\d).{4,15}$")
-    if "email_address" in request_json:
-        if not email_regex.match(request_json["email_address"]):
-            return False
-    if "password" in request_json:
-        if not password_regex.match(request_json["password"]):
-            return False
-    return True
-
-
-def validate_experience_params(request_json):
-    if "start_date" in request_json:
-        try:
-            datetime.strptime(request_json["start_date"], "%m-%d-%Y")
-        except ValueError:
-            return False
-    if "end_date" in request_json:
-        try:
-            datetime.strptime(request_json["end_date"], "%m-%d-%Y")
-        except ValueError:
-            return False
-    return True
 
 
 if __name__ == "__main__":

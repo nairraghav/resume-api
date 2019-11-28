@@ -23,4 +23,6 @@ lint:
 	flake8 src/ tests/
 
 format:
-	black src --line-length 79
+	black src/ --line-length 79
+	black tests/ --line-length 79
+

@@ -46,7 +46,7 @@ def seed_db():
             email_address=fake.ascii_safe_email(),
             test_pass=password,
             password=hashpw(password, gensalt()),
-            experiences=list(experiences)
+            experiences=list(experiences),
         )
         db.session.add(user)
 
