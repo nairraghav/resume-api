@@ -1,16 +1,20 @@
 from src import common
 
-required_parameter_list = ['name', 'number']
+required_parameter_list = ["name", "number"]
 
 
 def test_parameters_in_request_json():
     request_json = {"name": "sample name", "number": 12345}
-    assert common.parameters_in_request_json(request_json, required_parameter_list)
+    assert common.parameters_in_request_json(
+        request_json, required_parameter_list
+    )
 
 
 def test_parameters_not_in_request_json():
     request_json = {"name": "sample name", "nomber": 12345}
-    assert not common.parameters_in_request_json(request_json, required_parameter_list)
+    assert not common.parameters_in_request_json(
+        request_json, required_parameter_list
+    )
 
 
 def test_valid_user_params():
