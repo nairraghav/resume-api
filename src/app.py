@@ -1,8 +1,8 @@
 from flask import jsonify, render_template
 from flask import request
 
-# from flask_jwt_extended import jwt_required, create_access_token
-from datetime import datetime
+from flask_jwt_extended import create_access_token, decode_token
+from datetime import datetime, timedelta
 from src.config import app, db
 from src import database
 from src.models.user import User, user_schema, users_schema
@@ -13,6 +13,7 @@ from src.models.experience import (
 )
 from src import common
 from bcrypt import checkpw
+from functools import wraps
 
 
 user_params = [
@@ -45,6 +46,29 @@ def seed_db():
 @app.cli.command("drop_db")
 def drop_db():
     database.drop_db()
+
+
+def jwt_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        jwt_token = None
+        if "Authorization" not in request.headers:
+            return jsonify(message="No Access Token"), 401
+
+        jwt_token = request.headers["Authorization"]
+        try:
+            jwt_token_data = decode_token(jwt_token.split()[1])
+            user = User.query.filter(
+                User.email_address == jwt_token_data["identity"]
+            ).first()
+            current_user = user_schema.dump(user)
+        except Exception as e:
+            return jsonify(message=str(e)), 401
+            # return jsonify(message="Invalid Access Token"), 401
+
+        return f(current_user, *args, **kwargs)
+
+    return decorated
 
 
 ############################
@@ -163,10 +187,11 @@ def create_user():
         )
 
 
-@app.route("/api/user/<int:user_id>", methods=["PUT"])
-def update_user_by_id(user_id: int):
+@app.route("/api/user", methods=["PUT"])
+@jwt_required
+def update_user_by_id(current_user):
     if request.json:
-        user = User.query.filter(User.id == user_id).first()
+        user = User.query.filter(User.id == current_user["id"]).first()
         if user:
             if common.valid_user_params(request.json):
                 for request_parameter in user_params:
@@ -224,9 +249,10 @@ def update_user_by_id(user_id: int):
         )
 
 
-@app.route("/api/user/<int:user_id>", methods=["DELETE"])
-def delete_user_by_id(user_id: int):
-    user = User.query.filter(User.id == user_id).first()
+@app.route("/api/user", methods=["DELETE"])
+@jwt_required
+def delete_user_by_id(current_user):
+    user = User.query.filter(User.id == current_user["id"]).first()
     if user:
         db.session.delete(user)
         db.session.commit()
@@ -260,7 +286,8 @@ def get_experience_by_id(experience_id: int):
 
 
 @app.route("/api/experience/create", methods=["POST"])
-def create_experience():
+@jwt_required
+def create_experience(current_user):
     if request.json:
         if common.validate_experience_params(request.json):
             if common.parameters_in_request_json(
@@ -311,12 +338,15 @@ def create_experience():
 
 
 @app.route("/api/experience/<int:experience_id>", methods=["PUT"])
-def update_experience_by_id(experience_id: int):
+@jwt_required
+def update_experience_by_id(current_user, experience_id: int):
     if request.json:
         experience = Experience.query.filter(
             Experience.id == experience_id
         ).first()
         if experience:
+            if experience_id not in current_user["experiences"]:
+                return jsonify(message="This Is Not Your Experience"), 403
             if common.validate_experience_params(request.json):
                 if request.json.get("company_name"):
                     experience.company_name = request.json["company_name"]
@@ -354,7 +384,11 @@ def update_experience_by_id(experience_id: int):
 
 
 @app.route("/api/experience/<int:experience_id>", methods=["DELETE"])
-def delete_experience_by_id(experience_id: int):
+@jwt_required
+def delete_experience_by_id(current_user, experience_id: int):
+    if experience_id not in current_user["experiences"]:
+        return jsonify(message="This Is Not Your Experience"), 403
+
     experience = Experience.query.filter(
         Experience.id == experience_id
     ).first()
@@ -373,13 +407,22 @@ def delete_experience_by_id(experience_id: int):
 
 @app.route("/api/login", methods=["POST"])
 def login_user():
-    if request.json:
-        email = request.json["email_address"]
-        password = request.json["password"]
-        user = User.query.filter(User.email_address == email).first()
-        if user:
-            return jsonify(connected=checkpw(password.encode(), user.password))
-    pass
+    if not request.json:
+        return jsonify(message="Requires JSON Input"), 400
+    email = request.json["email_address"]
+    password = request.json["password"]
+    user = User.query.filter(User.email_address == email).first()
+
+    if not user:
+        return jsonify(message="User Does Not Exist"), 404
+
+    if checkpw(password.encode(), user.password):
+        access_token = create_access_token(
+            identity=email, expires_delta=timedelta(hours=24)
+        )
+        return jsonify(message="Login succeeded", access_token=access_token)
+    else:
+        return jsonify(message="Invalid Credentials"), 401
 
 
 if __name__ == "__main__":
