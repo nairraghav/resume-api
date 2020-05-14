@@ -1,5 +1,5 @@
 from flask import jsonify, render_template
-from flask import request
+from flask import request, session
 
 from flask_jwt_extended import create_access_token, decode_token
 from datetime import datetime, timedelta
@@ -14,7 +14,9 @@ from src.models.experience import (
 from src import common
 from bcrypt import checkpw
 from functools import wraps
+import os
 
+app.secret_key = os.getenv("SECURE_KEY")
 
 user_params = [
     "first_name",
@@ -207,7 +209,7 @@ def update_user_by_id(current_user):
                             if not isinstance(experience_ids, list):
                                 return (
                                     jsonify(
-                                        message="Experiences Is Not A " "List"
+                                        message="Experiences Is Not A List"
                                     ),
                                     400,
                                 )
@@ -423,6 +425,25 @@ def login_user():
         return jsonify(message="Login succeeded", access_token=access_token)
     else:
         return jsonify(message="Invalid Credentials"), 401
+
+
+############################
+#            UI            #
+############################
+
+
+@app.route("/", methods=["GET"])
+def home_page():
+    if not session.get("access_token"):
+        return render_template("home.html", authenticated=False)
+    else:
+        return render_template("home.html", authenticated=True)
+
+
+@app.route("/login", methods=["POST"])
+def attempt_login():
+    username = request.form["submit_username"]
+    password = request.form["submit_password"]
 
 
 if __name__ == "__main__":

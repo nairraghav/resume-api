@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>{% block title %}Login{% endblock %}</h3>
+<h1>Login / Register</h1>
+
+<form method="POST" action="{{ url_for('guess_that_pokemon') }}">
+    <input type="email" id="submit_username" name="username">
+    <input type="password" id="submit_password" name="password">
+    <input type="submit" value="Login" id="submit_login_button" name="submit">
+</form>
+{% endblock %}

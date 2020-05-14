@@ -24,8 +24,10 @@
 
 <section class="container">
     <div>Home</div>
-    {% if current_user.is_authenticated %}
-        <div>Build Resume</div>
+    {% if authenticated %}
+        <div>
+            <a href="login.html">Build Resume</a>
+        </div>
     {% else %}
         <div>Login / Register</div>
     {% endif %}
