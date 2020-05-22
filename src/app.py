@@ -55,11 +55,6 @@ def get_landing_page():
     return render_template("home.html")
 
 
-@app.route("/help", methods=["GET"])
-def get_home_page():
-    return render_template("home.html")
-
-
 ############################
 #            API           #
 ############################
