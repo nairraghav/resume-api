@@ -1,8 +1,7 @@
 from flask import jsonify, render_template
-from flask import request, session
+from flask import request
 
-from flask_jwt_extended import create_access_token, decode_token
-from datetime import datetime, timedelta
+from datetime import datetime
 from src.config import app, db
 from src import database
 from src.models.user import User, user_schema, users_schema
@@ -12,11 +11,7 @@ from src.models.experience import (
     experiences_schema,
 )
 from src import common
-from bcrypt import checkpw
-from functools import wraps
-import os
 
-app.secret_key = os.getenv("SECURE_KEY")
 
 user_params = [
     "first_name",
@@ -48,29 +43,6 @@ def seed_db():
 @app.cli.command("drop_db")
 def drop_db():
     database.drop_db()
-
-
-def jwt_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        jwt_token = None
-        if "Authorization" not in request.headers:
-            return jsonify(message="No Access Token"), 401
-
-        jwt_token = request.headers["Authorization"]
-        try:
-            jwt_token_data = decode_token(jwt_token.split()[1])
-            user = User.query.filter(
-                User.email_address == jwt_token_data["identity"]
-            ).first()
-            current_user = user_schema.dump(user)
-        except Exception as e:
-            return jsonify(message=str(e)), 401
-            # return jsonify(message="Invalid Access Token"), 401
-
-        return f(current_user, *args, **kwargs)
-
-    return decorated
 
 
 ############################
@@ -190,7 +162,6 @@ def create_user():
 
 
 @app.route("/api/user", methods=["PUT"])
-@jwt_required
 def update_user_by_id(current_user):
     if request.json:
         user = User.query.filter(User.id == current_user["id"]).first()
@@ -252,7 +223,6 @@ def update_user_by_id(current_user):
 
 
 @app.route("/api/user", methods=["DELETE"])
-@jwt_required
 def delete_user_by_id(current_user):
     user = User.query.filter(User.id == current_user["id"]).first()
     if user:
@@ -288,8 +258,7 @@ def get_experience_by_id(experience_id: int):
 
 
 @app.route("/api/experience/create", methods=["POST"])
-@jwt_required
-def create_experience(current_user):
+def create_experience():
     if request.json:
         if common.validate_experience_params(request.json):
             if common.parameters_in_request_json(
@@ -340,7 +309,6 @@ def create_experience(current_user):
 
 
 @app.route("/api/experience/<int:experience_id>", methods=["PUT"])
-@jwt_required
 def update_experience_by_id(current_user, experience_id: int):
     if request.json:
         experience = Experience.query.filter(
@@ -386,7 +354,6 @@ def update_experience_by_id(current_user, experience_id: int):
 
 
 @app.route("/api/experience/<int:experience_id>", methods=["DELETE"])
-@jwt_required
 def delete_experience_by_id(current_user, experience_id: int):
     if experience_id not in current_user["experiences"]:
         return jsonify(message="This Is Not Your Experience"), 403
@@ -400,50 +367,6 @@ def delete_experience_by_id(current_user, experience_id: int):
         return "", 204
     else:
         return jsonify(message="No Experience Found"), 404
-
-
-############################
-#           AUTH           #
-############################
-
-
-@app.route("/api/login", methods=["POST"])
-def login_user():
-    if not request.json:
-        return jsonify(message="Requires JSON Input"), 400
-    email = request.json["email_address"]
-    password = request.json["password"]
-    user = User.query.filter(User.email_address == email).first()
-
-    if not user:
-        return jsonify(message="User Does Not Exist"), 404
-
-    if checkpw(password.encode(), user.password):
-        access_token = create_access_token(
-            identity=email, expires_delta=timedelta(hours=24)
-        )
-        return jsonify(message="Login succeeded", access_token=access_token)
-    else:
-        return jsonify(message="Invalid Credentials"), 401
-
-
-############################
-#            UI            #
-############################
-
-
-@app.route("/", methods=["GET"])
-def home_page():
-    if not session.get("access_token"):
-        return render_template("home.html", authenticated=False)
-    else:
-        return render_template("home.html", authenticated=True)
-
-
-@app.route("/login", methods=["POST"])
-def attempt_login():
-    username = request.form["submit_username"]
-    password = request.form["submit_password"]
 
 
 if __name__ == "__main__":
