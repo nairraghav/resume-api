@@ -1,6 +1,29 @@
-{% extends 'base.html' %}
-
-{% block content %}
-<h3>{% block title %}Home{% endblock %}</h3>
-<p>Hello, World!</p>
-{% endblock %}
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>{% block title %}Resume App{% endblock %}</title>
+    </head>
+    <body>
+        <h2>Résumé API</h2>
+        <p>This API has the following supports</p>
+        <h3>User API</h3>
+        <ul>
+            <li>Create A User</li>
+            <li>Get All Users</li>
+            <li>Get A User By Id</li>
+            <li>Search For User By Email</li>
+            <li>Get User's Experience(s)</li>
+            <li>Update User By Id</li>
+            <li>Delete User By Id</li>
+        </ul>
+        <h3>Experience API</h3>
+        <ul>
+            <li>Create An Experience</li>
+            <li>Get All Experience</li>
+            <li>Get An Experience By Id</li>
+            <li>Update Experience By Id</li>
+            <li>Delete Experience By Id</li>
+        </ul>
+    </body>
+</html>

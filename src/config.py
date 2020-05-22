@@ -9,7 +9,6 @@ db = SQLAlchemy(app)
 marsh = Marshmallow(app)
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
-"""app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
     base_dir, "resume.db"
-)"""
+)

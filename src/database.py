@@ -17,9 +17,9 @@ def drop_db():
 
 
 def seed_db():
-    for i in range(randint(5, 10)):
+    for i in range(100):
         experiences = []
-        for j in range(randint(1, 3)):
+        for j in range(randint(0, 3)):
             start_date = fake.date_between(start_date="-30y", end_date="-10y")
             end_date = fake.date_between(start_date="-30y", end_date="-10y")
             experience_summary_sentences = randint(1, 5)
@@ -44,7 +44,6 @@ def seed_db():
             city_state=f"{fake.city()},{fake.state()}",
             phone_number=fake.phone_number(),
             email_address=fake.ascii_safe_email(),
-            test_pass=password,
             password=hashpw(password, gensalt()),
             experiences=list(experiences),
         )

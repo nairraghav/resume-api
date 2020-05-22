@@ -50,9 +50,14 @@ def drop_db():
 ############################
 
 
-@app.route("/home", methods=["GET"])
+@app.route("/", methods=["GET"])
+def get_landing_page():
+    return render_template("home.html")
+
+
+@app.route("/help", methods=["GET"])
 def get_home_page():
-    return render_template("home.html", current_user=None)
+    return render_template("home.html")
 
 
 ############################
@@ -161,10 +166,10 @@ def create_user():
         )
 
 
-@app.route("/api/user", methods=["PUT"])
-def update_user_by_id(current_user):
+@app.route("/api/user/<int:user_id>", methods=["PUT"])
+def update_user_by_id(user_id: int):
     if request.json:
-        user = User.query.filter(User.id == current_user["id"]).first()
+        user = User.query.filter(User.id == user_id).first()
         if user:
             if common.valid_user_params(request.json):
                 for request_parameter in user_params:
@@ -222,9 +227,9 @@ def update_user_by_id(current_user):
         )
 
 
-@app.route("/api/user", methods=["DELETE"])
-def delete_user_by_id(current_user):
-    user = User.query.filter(User.id == current_user["id"]).first()
+@app.route("/api/user/<int:user_id>", methods=["DELETE"])
+def delete_user_by_id(user_id: int):
+    user = User.query.filter(User.id == user_id).first()
     if user:
         db.session.delete(user)
         db.session.commit()
