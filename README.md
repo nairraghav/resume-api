@@ -25,14 +25,6 @@ to eventually create a resume.
 * [DELETE] /api/experience/<experience_id>
 
 
-## Upcoming Features
-### Front End
-* User Authentication (Flask-Login)
-* Front-End to interact with API
-* Templatize Resume
-* Export To PDF
-
-
 ## How To Run
 
 ### Install Requirements
@@ -55,3 +47,6 @@ flask seed_db
 ```bash
 flask run
 ```
+
+## Hosted At
+This API is currently hosted [here](resume-api.raghav-nair.com) via Heroku & Google Domains

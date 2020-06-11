@@ -10,7 +10,6 @@ def test_create_user():
     )
     new_user = user.User(
         password="password",
-        test_pass="password",
         email_address="ron@ron.com",
         phone_number="123456789",
         city_state="Seattle, WA",
@@ -18,7 +17,7 @@ def test_create_user():
         first_name="Ron",
         experiences=[new_experience],
     )
-    assert new_user.password == "password" == new_user.test_pass
+    assert new_user.password == "password"
     assert new_user.email_address == "ron@ron.com"
     assert new_user.phone_number == "123456789"
     assert new_user.city_state == "Seattle, WA"
