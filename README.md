@@ -49,4 +49,4 @@ flask run
 ```
 
 ## Hosted At
-This API is currently hosted [here](resume-api.raghav-nair.com) via Heroku & Google Domains
+This API is currently hosted [here](resume-api.raghav-nair.com) via Heroku & Google Domains. CI handled using Travis-CI
