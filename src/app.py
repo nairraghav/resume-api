@@ -69,6 +69,8 @@ def get_landing_page():
 def get_all_users():
     users = User.query.all()
     result = users_schema.dump(users)
+    for user in result:
+        user.pop('password')
     return jsonify(users=result)
 
 
@@ -77,6 +79,7 @@ def get_user_by_id(user_id: int):
     user = User.query.filter(User.id == user_id).first()
     if user:
         result = user_schema.dump(user)
+        result.pop('password')
         return jsonify(user=result)
     else:
         return jsonify(message=f"No User Found"), 404
@@ -89,6 +92,7 @@ def get_user_by_email():
         user = User.query.filter(User.email_address == user_email).first()
         if user:
             result = user_schema.dump(user)
+            result.pop('password')
             return jsonify(user=result)
         else:
             return jsonify(message=f"No User Found"), 404
